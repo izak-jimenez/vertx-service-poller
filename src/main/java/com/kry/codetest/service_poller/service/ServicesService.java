@@ -3,12 +3,16 @@ package com.kry.codetest.service_poller.service;
 import com.kry.codetest.service_poller.ServiceVerticle;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import com.kry.codetest.service_poller.config.Constants;
 import com.kry.codetest.service_poller.model.Service;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
 import io.vertx.ext.web.RoutingContext;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class ServicesService {
   private final ServicesRepository servicesRepository;
@@ -22,7 +26,6 @@ public class ServicesService {
   public void createService(RoutingContext routingContext) {
     servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, routingContext.getBodyAsJson(), result -> {
       if(result.succeeded()) {
-        logger.info("");
         routingContext.response()
           .setStatusCode(200)
           .end(result.result());
@@ -33,11 +36,11 @@ public class ServicesService {
   public void getServices(RoutingContext routingContext) {
     servicesRepository.getMongoClient().find(Constants.SERVICE_DOCUMENT, new JsonObject(), result -> {
       if (result.succeeded()) {
-        JsonObject response = new JsonObject();
+        JsonArray response = new JsonArray(result.result());
         routingContext.response()
           .putHeader("Content-Type", "application/json")
           .setStatusCode(200)
-          .end(response.encode());
+          .end(response.encodePrettily());
       } else {
         result.cause().printStackTrace();
       }

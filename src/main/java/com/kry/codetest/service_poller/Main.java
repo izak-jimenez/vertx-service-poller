@@ -9,6 +9,6 @@ public class Main {
     DeploymentOptions options = new DeploymentOptions();
     options.setInstances(1);
 
-    vertx.deployVerticle("ServiceVerticle", options);
+    vertx.deployVerticle(new ServiceVerticle(), options);
   }
 }

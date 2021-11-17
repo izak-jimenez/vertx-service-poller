@@ -17,7 +17,7 @@ repositories {
 val vertxVersion = "4.2.1"
 val junitJupiterVersion = "5.7.0"
 
-val mainVerticleName = "com.kry.codetest.service_poller.MainVerticle"
+val mainVerticleName = "com.kry.codetest.service_poller.ServiceVerticle"
 val launcherClassName = "io.vertx.core.Launcher"
 
 val watchForChange = "src/**/*"
@@ -39,6 +39,9 @@ dependencies {
   implementation("io.vertx:vertx-mongo-client")
   implementation("io.vertx:vertx-service-discovery")
   implementation("io.vertx:vertx-lang-kotlin-coroutines")
+  implementation("org.slf4j:slf4j-api:2.0.0-alpha5")
+
+
   compileOnly("org.projectlombok:lombok:1.18.22")
   annotationProcessor("org.projectlombok:lombok:1.18.22")
   testImplementation("io.vertx:vertx-junit5")
@@ -53,7 +56,7 @@ java {
 tasks.withType<ShadowJar> {
   archiveClassifier.set("fat")
   manifest {
-    attributes(mapOf("Main-Verticle" to mainVerticleName))
+    attributes(mapOf("Service-Verticle" to mainVerticleName))
   }
   mergeServiceFiles()
 }

@@ -11,6 +11,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 
 import java.util.HashMap;
 
@@ -41,6 +42,7 @@ public class ServiceVerticle extends AbstractVerticle {
     servicesService = new ServicesService(new ServicesRepository(vertx, mongoConfig));
 
     Router router = Router.router(vertx);
+    router.route().handler(BodyHandler.create());
 
     router.get("/services").handler(this.servicesService::getServices);
     router.post("/services").handler(this.servicesService::createService);
