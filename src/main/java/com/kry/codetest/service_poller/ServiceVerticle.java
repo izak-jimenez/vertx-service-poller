@@ -5,6 +5,7 @@ import com.kry.codetest.service_poller.model.Service;
 import com.kry.codetest.service_poller.model.ServiceMap;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
 import com.kry.codetest.service_poller.service.ServicesService;
+import com.kry.codetest.service_poller.util.ServicePoller;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
@@ -14,6 +15,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.handler.BodyHandler;
 
 import java.util.ArrayList;
@@ -24,6 +26,10 @@ public class ServiceVerticle extends AbstractVerticle {
   private static final int httpPort = Integer.parseInt(System.getenv().getOrDefault("HTTP_PORT", "8080"));
 
   private ServiceMap serviceMap;
+
+  private ServicePoller servicePoller;
+
+  private List<Service> polledServices;
 
   @Override
   public void start(Promise<Void> startPromise) {
@@ -46,12 +52,22 @@ public class ServiceVerticle extends AbstractVerticle {
 
     serviceMap = new ServiceMap();
 
+    servicePoller = new ServicePoller(serviceMap);
+
     fetchExternalServices(vertx, config, serviceMap);
 
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
 
     generateExternalServicesRoutes(router, serviceMap);
+
+    WebClient webclient = WebClient.create(vertx);
+
+    vertx.setPeriodic(Constants.SERVICE_POLLER_INTERVAL, id -> {
+      servicePoller.pollServicesTask(webclient).onSuccess(result -> {
+        polledServices = result;
+      });
+    });
 
     router.get(Constants.SERVICE_POLLER_ENDPOINT + "/services").handler(servicesService::getServices);
     router.post(Constants.SERVICE_POLLER_ENDPOINT + "/services").handler(servicesService::createService);
