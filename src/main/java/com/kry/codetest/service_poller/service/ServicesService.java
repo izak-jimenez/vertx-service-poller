@@ -11,9 +11,6 @@ import com.kry.codetest.service_poller.model.Service;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
 import io.vertx.ext.web.RoutingContext;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class ServicesService {
   private final ServicesRepository servicesRepository;
 

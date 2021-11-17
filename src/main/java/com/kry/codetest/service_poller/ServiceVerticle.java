@@ -1,26 +1,32 @@
 package com.kry.codetest.service_poller;
 
+import com.kry.codetest.service_poller.config.Constants;
+import com.kry.codetest.service_poller.model.Service;
+import com.kry.codetest.service_poller.model.ServiceMap;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
 import com.kry.codetest.service_poller.service.ServicesService;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Context;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ServiceVerticle extends AbstractVerticle {
   private static final Logger logger = LoggerFactory.getLogger(ServiceVerticle.class);
   private static final int httpPort = Integer.parseInt(System.getenv().getOrDefault("HTTP_PORT", "8080"));
 
-  private ServicesService servicesService;
-  private HashMap<String, String> serviceMap = new HashMap<>();
+  private ServiceMap serviceMap;
 
   @Override
   public void start(Promise<Void> startPromise) {
@@ -39,13 +45,17 @@ public class ServiceVerticle extends AbstractVerticle {
       .put("connection_string", config.getString("mongo_uri"))
       .put("db_name", config.getString("mongo_db"));
 
-    servicesService = new ServicesService(new ServicesRepository(vertx, mongoConfig));
+    ServicesService servicesService = new ServicesService(new ServicesRepository(vertx, mongoConfig));
+
+    serviceMap = new ServiceMap();
+
+    fetchExternalServices(vertx, config, serviceMap);
 
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
 
-    router.get("/services").handler(this.servicesService::getServices);
-    router.post("/services").handler(this.servicesService::createService);
+    router.get(Constants.SERVICE_POLLER_ENDPOINT + "/services").handler(servicesService::getServices);
+    router.post(Constants.SERVICE_POLLER_ENDPOINT + "/services").handler(servicesService::createService);
 
     vertx.createHttpServer()
       .requestHandler(router)
@@ -55,5 +65,18 @@ public class ServiceVerticle extends AbstractVerticle {
         startPromise.complete();
       })
       .onFailure(startPromise::fail);
+  }
+
+  private void fetchExternalServices(Vertx vertx, JsonObject config, ServiceMap activeServices) {
+    List<Service> services = new ArrayList<>();
+    ServicesRepository servicesRepository = new ServicesRepository(vertx, config);
+    servicesRepository.getMongoClient().find(Constants.SERVICE_DOCUMENT, new JsonObject(), result -> {
+      if(result.succeeded()) {
+        for(JsonObject serviceJson : result.result()) {
+          services.add(serviceJson.mapTo(Service.class));
+        }
+        activeServices.registerActiveServices(services);
+      }
+    });
   }
 }
