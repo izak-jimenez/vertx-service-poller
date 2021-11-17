@@ -8,18 +8,15 @@ import com.kry.codetest.service_poller.service.ServicesService;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Context;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class ServiceVerticle extends AbstractVerticle {
@@ -54,6 +51,8 @@ public class ServiceVerticle extends AbstractVerticle {
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
 
+    generateExternalServicesRoutes(router, serviceMap);
+
     router.get(Constants.SERVICE_POLLER_ENDPOINT + "/services").handler(servicesService::getServices);
     router.post(Constants.SERVICE_POLLER_ENDPOINT + "/services").handler(servicesService::createService);
 
@@ -77,6 +76,18 @@ public class ServiceVerticle extends AbstractVerticle {
         }
         activeServices.registerActiveServices(services);
       }
+    });
+  }
+
+  private void generateExternalServicesRoutes(Router router, ServiceMap activeServices) {
+    activeServices.getServicesStatusList().forEach((s, service) -> {
+      router.get(Constants.EXTERNAL_SERVICES_ENDPOINT + service.getUrl()).handler(request -> {
+        JsonObject dynamicResponse = JsonObject.mapFrom(service);
+        request.response()
+          .putHeader("Content-Type", "application/json")
+          .setStatusCode(200)
+          .end(dynamicResponse.encodePrettily());
+      });
     });
   }
 }
