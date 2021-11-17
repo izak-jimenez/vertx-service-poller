@@ -11,6 +11,6 @@ public class ServiceSimulatorVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) {
-    
+
   }
 }

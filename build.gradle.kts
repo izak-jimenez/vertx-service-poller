@@ -36,6 +36,7 @@ dependencies {
   implementation("io.vertx:vertx-health-check")
   implementation("io.vertx:vertx-web")
   implementation("io.vertx:vertx-mysql-client")
+  implementation("io.vertx:vertx-mongo-client")
   implementation("io.vertx:vertx-service-discovery")
   implementation("io.vertx:vertx-lang-kotlin-coroutines")
   compileOnly("org.projectlombok:lombok:1.18.22")
