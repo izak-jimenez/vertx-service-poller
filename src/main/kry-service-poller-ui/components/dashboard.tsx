@@ -7,7 +7,7 @@ import {
   Center
 } from '@chakra-ui/layout'
 import { useEffect, useState } from 'react'
-import { Divider, ServiceCard } from '.'
+import { Divider, ServiceCard, AppBar } from '.'
 import { getPolledServices } from '../services/kry-service-poller-service'
 import { IService } from '../types'
 
@@ -31,6 +31,8 @@ const Dashboard = () => {
         <Center>
           <Heading fontSize="3xl">Kry Service Monitor</Heading>
         </Center>
+        <Divider height={40} />
+        <AppBar />
         <Divider height={40} />
         <Box>
           <SimpleGrid columns={[1, 1, 2]} spacing={4}>
