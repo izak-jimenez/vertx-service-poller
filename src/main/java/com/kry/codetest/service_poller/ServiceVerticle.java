@@ -14,6 +14,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.WebClient;
@@ -127,6 +128,13 @@ public class ServiceVerticle extends AbstractVerticle {
 
   private void setServicePollerEndpoints(Router router, ServicesService servicesService) {
     router.get(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::getServices);
+    router.get(Constants.POLLED_SERVICES_ENDPOINT).handler(request -> {
+      JsonArray polledServicesResponse = new JsonArray(polledServices);
+      request.response()
+        .putHeader("Content-Type", "application/json")
+        .setStatusCode(200)
+        .end(polledServicesResponse.encodePrettily());
+    });
     router.post(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::createService);
   }
 }
