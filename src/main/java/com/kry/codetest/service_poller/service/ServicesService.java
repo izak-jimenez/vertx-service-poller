@@ -12,6 +12,8 @@ import com.kry.codetest.service_poller.model.Service;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
 import io.vertx.ext.web.RoutingContext;
 
+import java.time.LocalDateTime;
+
 public class ServicesService {
   private final ServicesRepository servicesRepository;
 
@@ -22,7 +24,8 @@ public class ServicesService {
   }
 
   public void createService(RoutingContext routingContext) {
-    servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, routingContext.getBodyAsJson(), result -> {
+    servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, routingContext.getBodyAsJson().put("createdOn",
+    LocalDateTime.now()).put("modifiedOn", LocalDateTime.now()),result -> {
       if(result.succeeded()) {
         routingContext.response()
           .setStatusCode(200)
