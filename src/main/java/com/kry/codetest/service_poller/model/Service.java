@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Service {
-  private Integer uuid;
+  private String uuid;
   private String name;
   private String url;
   private ServiceStatus status;

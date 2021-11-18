@@ -35,11 +35,10 @@ public class ServicePoller {
             logger.info("Error communicating with the " + service.getName() + " service. \nError message: " + error);
           });
       });
-      polledServices.complete(services);
-      return polledServices.future();
     } else {
-      polledServices.complete(services);
-      return polledServices.future();
+      logger.info("No running services found.");
     }
+    polledServices.complete(services);
+    return polledServices.future();
   }
 }

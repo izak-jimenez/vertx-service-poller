@@ -9,6 +9,7 @@ import com.kry.codetest.service_poller.util.ServicePoller;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
@@ -23,7 +24,7 @@ import java.util.List;
 
 public class ServiceVerticle extends AbstractVerticle {
   private static final Logger logger = LoggerFactory.getLogger(ServiceVerticle.class);
-  private static final int httpPort = Integer.parseInt(System.getenv().getOrDefault("HTTP_PORT", "8080"));
+  private static final int httpPort = Constants.HTTP_PORT;
 
   private ServiceMap serviceMap;
 
@@ -50,7 +51,7 @@ public class ServiceVerticle extends AbstractVerticle {
 
     ServicesService servicesService = new ServicesService(new ServicesRepository(vertx, mongoConfig));
 
-    serviceMap = new ServiceMap();
+    /*serviceMap = new ServiceMap();
 
     servicePoller = new ServicePoller(serviceMap);
 
@@ -59,18 +60,31 @@ public class ServiceVerticle extends AbstractVerticle {
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
 
-    generateExternalServicesRoutes(router, serviceMap);
+    generateExternalServicesRoutes(router, serviceMap);*/
+
+    Router router = Router.router(vertx);
 
     WebClient webclient = WebClient.create(vertx);
 
-    vertx.setPeriodic(Constants.SERVICE_POLLER_INTERVAL, id -> {
-      servicePoller.pollServicesTask(webclient).onSuccess(result -> {
-        polledServices = result;
-      });
-    });
+    //setServicePollerEndpoints(router, servicesService);
 
-    router.get(Constants.SERVICE_POLLER_ENDPOINT + "/services").handler(servicesService::getServices);
-    router.post(Constants.SERVICE_POLLER_ENDPOINT + "/services").handler(servicesService::createService);
+    vertx.setPeriodic(Constants.SERVICE_POLLER_INTERVAL, id -> {
+      serviceMap = new ServiceMap();
+      servicePoller = new ServicePoller(serviceMap);
+      router.clear();
+      router.route().handler(BodyHandler.create());
+      setServicePollerEndpoints(router, servicesService);
+      fetchExternalServices(vertx, config, serviceMap)
+        .onSuccess(result -> {
+          generateExternalServicesRoutes(router, serviceMap);
+          servicePoller.pollServicesTask(webclient).onSuccess(results -> {
+            polledServices = results;
+          });
+        })
+          .onFailure(error -> {
+            logger.info("Error fetching external services.\nError message: " + error);
+          });
+    });
 
     vertx.createHttpServer()
       .requestHandler(router)
@@ -82,17 +96,21 @@ public class ServiceVerticle extends AbstractVerticle {
       .onFailure(startPromise::fail);
   }
 
-  private void fetchExternalServices(Vertx vertx, JsonObject config, ServiceMap activeServices) {
+  private Future<Void> fetchExternalServices(Vertx vertx, JsonObject config, ServiceMap activeServices) {
     List<Service> services = new ArrayList<>();
     ServicesRepository servicesRepository = new ServicesRepository(vertx, config);
+    Promise<Void> promise = Promise.promise();
     servicesRepository.getMongoClient().find(Constants.SERVICE_DOCUMENT, new JsonObject(), result -> {
       if(result.succeeded()) {
+        logger.info("Found the following registered services: " + result.result());
         for(JsonObject serviceJson : result.result()) {
           services.add(serviceJson.mapTo(Service.class));
         }
         activeServices.registerActiveServices(services);
+        promise.complete();
       }
     });
+    return promise.future();
   }
 
   private void generateExternalServicesRoutes(Router router, ServiceMap activeServices) {
@@ -105,5 +123,10 @@ public class ServiceVerticle extends AbstractVerticle {
           .end(dynamicResponse.encodePrettily());
       });
     });
+  }
+
+  private void setServicePollerEndpoints(Router router, ServicesService servicesService) {
+    router.get(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::getServices);
+    router.post(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::createService);
   }
 }

@@ -1,6 +1,7 @@
 package com.kry.codetest.service_poller.service;
 
 import com.kry.codetest.service_poller.ServiceVerticle;
+import io.vertx.core.Promise;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
@@ -26,6 +27,22 @@ public class ServicesService {
         routingContext.response()
           .setStatusCode(200)
           .end(result.result());
+      }
+    });
+  }
+
+  public void findServiceByUuid(String uuid, RoutingContext routingContext) {
+    JsonObject query = new JsonObject()
+      .put("uuid", uuid);
+    servicesRepository.getMongoClient().find(Constants.SERVICE_DOCUMENT, query, result -> {
+      if (result.succeeded()) {
+        JsonArray response = new JsonArray(result.result());
+        routingContext.response()
+          .putHeader("Content-Type", "application/json")
+          .setStatusCode(200)
+          .end(response.encodePrettily());
+      } else {
+        result.cause().printStackTrace();
       }
     });
   }
