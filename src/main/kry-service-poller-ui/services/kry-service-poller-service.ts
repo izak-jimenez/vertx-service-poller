@@ -14,9 +14,9 @@ export const getPolledServices = async () => {
   }
 }
 
-export const addService = async () => {
+export const addService = async (service: IService) => {
   try {
-    const response = await servicesHttpClient.post(endpoints.createServiceEndpoint)
+    const response = await servicesHttpClient.post(endpoints.createServiceEndpoint, service)
     if (response.status === 200) {
       const createdService: number = response.data
       return response

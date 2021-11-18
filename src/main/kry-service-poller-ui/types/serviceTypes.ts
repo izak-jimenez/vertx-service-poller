@@ -7,10 +7,17 @@ export interface IServiceCard {
 }
 
 export interface IService {
-  uuid: string
+  uuid?: string
   name: string
   url: string
   status: string
-  createdOn: Date
-  modifiedOn: Date
+  createdOn?: Date
+  modifiedOn?: Date
+}
+
+export interface ICreateNewServiceModal {
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+  newServiceDataHandler: Function
 }
