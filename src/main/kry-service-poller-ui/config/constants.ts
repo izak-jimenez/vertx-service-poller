@@ -6,3 +6,5 @@ export const serviceStatus = {
   ok: 'OK',
   fail: 'FAIL'
 }
+
+export const servicesRefreshRate = 5000

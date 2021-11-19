@@ -3,7 +3,6 @@ import {
   ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
   Button,
@@ -24,12 +23,14 @@ const CreateNewServiceModal = ({
   const {
     handleSubmit,
     register,
+    reset,
     formState: { errors, isSubmitting }
   } = useForm()
 
   const onSubmit = (values: { serviceName: string; serviceUrl: string }) => {
     const { serviceName, serviceUrl } = values
     newServiceDataHandler(serviceName, serviceUrl)
+    reset()
     onClose()
   }
 

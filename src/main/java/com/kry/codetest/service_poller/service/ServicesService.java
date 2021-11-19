@@ -1,6 +1,10 @@
 package com.kry.codetest.service_poller.service;
 
 import com.kry.codetest.service_poller.ServiceVerticle;
+import com.mongodb.BSONTimestampCodec;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -11,8 +15,12 @@ import com.kry.codetest.service_poller.config.Constants;
 import com.kry.codetest.service_poller.model.Service;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
 import io.vertx.ext.web.RoutingContext;
+import org.bson.BsonDateTime;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.UUID;
 
 public class ServicesService {
   private final ServicesRepository servicesRepository;
@@ -23,15 +31,65 @@ public class ServicesService {
     this.servicesRepository = servicesRepository;
   }
 
-  public void createService(RoutingContext routingContext) {
-    servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, routingContext.getBodyAsJson().put("createdOn",
-    LocalDateTime.now()).put("modifiedOn", LocalDateTime.now()),result -> {
+  public Future<Void> createService(RoutingContext routingContext) {
+    Promise<Void> promise = Promise.promise();
+    JsonObject servicePayload = new JsonObject()
+      .put("uuid", UUID.randomUUID().toString())
+      .put("name", routingContext.getBodyAsJson().getValue("name"))
+      .put("url", routingContext.getBodyAsJson().getValue("url"))
+      .put("status", routingContext.getBodyAsJson().getValue("status"))
+      .put("createdOn", LocalDateTime.now().toString())
+      .put("modifiedOn", LocalDateTime.now().toString());
+    servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, servicePayload, result -> {
       if(result.succeeded()) {
         routingContext.response()
           .setStatusCode(200)
           .end(result.result());
+        promise.complete();
+      } else {
+        logger.info("ERROR WHILE REGISTERING SERVICE: " + result.cause().getMessage());
       }
     });
+    return promise.future();
+  }
+
+  public Future<Void> updateService(RoutingContext routingContext) {
+    Promise<Void> promise = Promise.promise();
+    JsonObject query = new JsonObject()
+      .put("uuid", routingContext.getBodyAsJson().getValue("uuid"));
+    JsonObject update = new JsonObject().put("$set", new JsonObject()
+      .put("name", routingContext.getBodyAsJson().getValue("name"))
+      .put("url", routingContext.getBodyAsJson().getValue("url"))
+      .put("modifiedOn", LocalDateTime.now().toString()));
+    servicesRepository.getMongoClient().updateCollection(Constants.SERVICE_DOCUMENT, query, update, result -> {
+      if(result.succeeded()) {
+        routingContext.response()
+          .setStatusCode(200)
+          .end("Service successfully updated!");
+        promise.complete();
+      } else {
+        logger.info("ERROR WHILE UPDATING SERVICE: " + result.cause().getMessage());
+      }
+    });
+    return promise.future();
+  }
+
+  public Future<Void> deleteService(RoutingContext routingContext) {
+    logger.info("UUID TO DELETE: " + routingContext.request().getParam("uuid"));
+    Promise<Void> promise = Promise.promise();
+    JsonObject query = new JsonObject()
+      .put("uuid", routingContext.request().getParam("uuid"));
+    servicesRepository.getMongoClient().removeDocuments(Constants.SERVICE_DOCUMENT, query, result -> {
+      if(result.succeeded()) {
+        routingContext.response()
+          .setStatusCode(200)
+          .end("Service successfully deleted!");
+        promise.complete();
+      } else {
+        logger.info("ERROR WHILE UPDATING SERVICE: " + result.cause().getMessage());
+      }
+    });
+    return promise.future();
   }
 
   public void findServiceByUuid(String uuid, RoutingContext routingContext) {

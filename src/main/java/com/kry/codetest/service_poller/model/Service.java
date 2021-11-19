@@ -18,8 +18,8 @@ public class Service {
   private String name;
   private String url;
   private ServiceStatus status;
-  private LocalDateTime createdOn;
-  private LocalDateTime modifiedOn;
+  private String createdOn;
+  private String modifiedOn;
 }
 
 enum ServiceStatus {

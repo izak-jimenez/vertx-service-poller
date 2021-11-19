@@ -69,8 +69,11 @@ public class ServiceVerticle extends AbstractVerticle {
 
     //setServicePollerEndpoints(router, servicesService);
 
+    initRouter(router, config, servicesService, webclient);
+
     vertx.setPeriodic(Constants.SERVICE_POLLER_INTERVAL, id -> {
-      serviceMap = new ServiceMap();
+      initRouter(router, config, servicesService, webclient);
+      /*serviceMap = new ServiceMap();
       servicePoller = new ServicePoller(serviceMap);
       router.clear();
       router.route().handler(BodyHandler.create());
@@ -84,7 +87,7 @@ public class ServiceVerticle extends AbstractVerticle {
         })
           .onFailure(error -> {
             logger.info("Error fetching external services.\nError message: " + error);
-          });
+          });*/
     });
 
     vertx.createHttpServer()
@@ -114,6 +117,24 @@ public class ServiceVerticle extends AbstractVerticle {
     return promise.future();
   }
 
+  private void initRouter(Router router, JsonObject config, ServicesService servicesService, WebClient webclient) {
+    this.serviceMap = new ServiceMap();
+    this.servicePoller = new ServicePoller(serviceMap);
+    router.clear();
+    router.route().handler(BodyHandler.create());
+    setServicePollerEndpoints(router, servicesService);
+    fetchExternalServices(vertx, config, this.serviceMap)
+      .onSuccess(result -> {
+        generateExternalServicesRoutes(router, serviceMap);
+        this.servicePoller.pollServicesTask(webclient).onSuccess(results -> {
+          this.polledServices = results;
+        });
+      })
+      .onFailure(error -> {
+        logger.info("Error fetching external services.\nError message: " + error);
+      });
+  }
+
   private void generateExternalServicesRoutes(Router router, ServiceMap activeServices) {
     activeServices.getServicesStatusList().forEach((s, service) -> {
       router.get(Constants.EXTERNAL_SERVICES_ENDPOINT + service.getUrl()).handler(request -> {
@@ -136,5 +157,7 @@ public class ServiceVerticle extends AbstractVerticle {
         .end(polledServicesResponse.encodePrettily());
     });
     router.post(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::createService);
+    router.put(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::updateService);
+    router.delete(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::deleteService);
   }
 }

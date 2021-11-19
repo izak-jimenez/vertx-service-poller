@@ -7,12 +7,12 @@ export interface IServiceCard {
 }
 
 export interface IService {
-  uuid?: string
+  uuid?: string | undefined
   name: string
   url: string
   status: string
-  createdOn?: Date
-  modifiedOn?: Date
+  createdOn?: Date | undefined
+  modifiedOn?: Date | undefined
 }
 
 export interface ICreateNewServiceModal {
@@ -20,4 +20,12 @@ export interface ICreateNewServiceModal {
   onOpen: () => void
   onClose: () => void
   newServiceDataHandler: Function
+}
+
+export interface IUpdateServiceModal {
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+  updateServiceDataHandler: Function
+  service: IService | undefined
 }

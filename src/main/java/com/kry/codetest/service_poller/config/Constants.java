@@ -7,5 +7,5 @@ public final class Constants {
   public static final String EXTERNAL_SERVICES_ENDPOINT = "/external-services/api";
   public static final String SERVICE_POLLER_ENDPOINT = "/service-poller/api/services";
   public static final String POLLED_SERVICES_ENDPOINT = "/service-poller/api/polled-services";
-  public static final Integer SERVICE_POLLER_INTERVAL = 10000;
+  public static final Integer SERVICE_POLLER_INTERVAL = 5000;
 }
