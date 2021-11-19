@@ -30,7 +30,8 @@ const UpdateServiceModal = ({
   isOpen,
   onClose,
   updateServiceDataHandler,
-  service
+  service,
+  updateServicesHandler
 }: IUpdateServiceModal) => {
   const {
     handleSubmit,
@@ -57,6 +58,7 @@ const UpdateServiceModal = ({
 
   const handleConfirmDeleteService = async () => {
     const deletedService = await deleteService(service?.uuid ?? '')
+    await updateServicesHandler()
     close()
     onClose()
   }

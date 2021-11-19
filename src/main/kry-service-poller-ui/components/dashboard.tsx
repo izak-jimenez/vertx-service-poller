@@ -85,10 +85,11 @@ const Dashboard = () => {
     }
     const updatedServiceResponse = await updateService(updatedService)
     console.log('UPDATED SERVICE ID: ', updatedServiceResponse?.data)
+    await fetchPolledServices()
   }
 
   return (
-    <Container maxW="3xl" paddingTop={[4, 6, 12, 24]}>
+    <Container maxW="4xl" paddingTop={[4, 6, 12, 24]}>
       <Box>
         <Center>
           <Heading fontSize="3xl">Kry Service Monitor</Heading>
@@ -133,6 +134,7 @@ const Dashboard = () => {
         onClose={onClose}
         service={selectedService}
         updateServiceDataHandler={updateServiceHandler}
+        updateServicesHandler={fetchPolledServices}
       />
     </Container>
   )

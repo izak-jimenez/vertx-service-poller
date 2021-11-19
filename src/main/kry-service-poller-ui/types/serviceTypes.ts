@@ -28,4 +28,5 @@ export interface IUpdateServiceModal {
   onClose: () => void
   updateServiceDataHandler: Function
   service: IService | undefined
+  updateServicesHandler: Function
 }
