@@ -8,4 +8,6 @@ public final class Constants {
   public static final String SERVICE_POLLER_ENDPOINT = "/service-poller/api/services";
   public static final String POLLED_SERVICES_ENDPOINT = "/service-poller/api/polled-services";
   public static final Integer SERVICE_POLLER_INTERVAL = 1000;
+  public static final String MONGODB_URI = System.getenv("MONGODB_URI");
+  public static final String MONGODB_DATABASE = System.getenv("MONGODB_DATABASE");
 }

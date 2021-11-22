@@ -1,10 +1,8 @@
 package com.kry.codetest.service_poller.service;
 
 import com.kry.codetest.service_poller.ServiceVerticle;
-import com.mongodb.BSONTimestampCodec;
-import io.vertx.core.AsyncResult;
+import com.kry.codetest.service_poller.exception.ServiceAlreadyExistsException;
 import io.vertx.core.Future;
-import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -12,14 +10,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import com.kry.codetest.service_poller.config.Constants;
-import com.kry.codetest.service_poller.model.Service;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
 import io.vertx.ext.web.RoutingContext;
-import org.bson.BsonDateTime;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 public class ServicesService {
@@ -40,7 +34,27 @@ public class ServicesService {
       .put("status", routingContext.getBodyAsJson().getValue("status"))
       .put("createdOn", LocalDateTime.now().toString())
       .put("modifiedOn", LocalDateTime.now().toString());
-    servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, servicePayload, result -> {
+
+    JsonObject query = new JsonObject()
+      .put("name", routingContext.getBodyAsJson().getValue("name"));
+    servicesRepository.getMongoClient().find(Constants.SERVICE_DOCUMENT, query, result -> {
+      if (result.succeeded()) {
+        throw new ServiceAlreadyExistsException(routingContext.getBodyAsJson().getValue("name").toString());
+      } else {
+        result.cause().printStackTrace();
+        servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, servicePayload, createServiceResult -> {
+          if (!createServiceResult.succeeded()) {
+            logger.info("ERROR WHILE REGISTERING SERVICE: " + createServiceResult.cause().getMessage());
+          }
+          routingContext.response()
+            .setStatusCode(200)
+            .end(createServiceResult.result());
+          promise.complete();
+        });
+      }
+    });
+
+    /*servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, servicePayload, result -> {
       if(result.succeeded()) {
         routingContext.response()
           .setStatusCode(200)
@@ -48,8 +62,12 @@ public class ServicesService {
         promise.complete();
       } else {
         logger.info("ERROR WHILE REGISTERING SERVICE: " + result.cause().getMessage());
+        routingContext.response()
+          .setStatusCode(200)
+          .end(result.result());
+        promise.complete();
       }
-    });
+    });*/
     return promise.future();
   }
 
@@ -86,7 +104,7 @@ public class ServicesService {
           .end("Service successfully deleted!");
         promise.complete();
       } else {
-        logger.info("ERROR WHILE UPDATING SERVICE: " + result.cause().getMessage());
+        logger.info("ERROR WHILE DELETING SERVICE: " + result.cause().getMessage());
       }
     });
     return promise.future();

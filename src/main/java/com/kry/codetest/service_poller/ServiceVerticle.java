@@ -1,6 +1,7 @@
 package com.kry.codetest.service_poller;
 
 import com.kry.codetest.service_poller.config.Constants;
+import com.kry.codetest.service_poller.exception.ServiceAlreadyExistsException;
 import com.kry.codetest.service_poller.model.Service;
 import com.kry.codetest.service_poller.model.ServiceMap;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
@@ -26,6 +27,8 @@ import java.util.List;
 public class ServiceVerticle extends AbstractVerticle {
   private static final Logger logger = LoggerFactory.getLogger(ServiceVerticle.class);
   private static final int httpPort = Constants.HTTP_PORT;
+  private static final String mongodbUri = Constants.MONGODB_URI;
+  private static final String mongoDbDatabase = Constants.MONGODB_DATABASE;
 
   private ServiceMap serviceMap;
 
@@ -35,7 +38,7 @@ public class ServiceVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) {
-    /*ConfigStoreOptions fileStore = new ConfigStoreOptions()
+    /*ConfigStoreOptions jsonConfigStore = new ConfigStoreOptions()
       .setType("file")
       .setOptional(true)
       .setConfig(new JsonObject().put("path", "config/config.json"));
@@ -43,8 +46,13 @@ public class ServiceVerticle extends AbstractVerticle {
 
     JsonObject config = Vertx.currentContext().config();
 
-    config.put("mongo_uri", "mongodb+srv://kry:JBE7E3hBtgkRrSoL@kry-cluster.ovhky.mongodb.net/krydb?retryWrites=true&w=majority");
-    config.put("mongo_db", "krydb");
+    logger.info("MONGO URI: " + mongodbUri);
+    logger.info("MONGO DB: " + mongoDbDatabase);
+
+    config.put("mongo_uri", mongodbUri);
+    config.put("mongo_db", mongoDbDatabase);
+    /*config.put("mongo_uri", "mongodb+srv://kry:JBE7E3hBtgkRrSoL@kry-cluster.ovhky.mongodb.net/krydb?retryWrites=true&w=majority");
+    config.put("mongo_db", "krydb");*/
 
     JsonObject mongoConfig = new JsonObject()
       .put("connection_string", config.getString("mongo_uri"))
@@ -52,42 +60,14 @@ public class ServiceVerticle extends AbstractVerticle {
 
     ServicesService servicesService = new ServicesService(new ServicesRepository(vertx, mongoConfig));
 
-    /*serviceMap = new ServiceMap();
-
-    servicePoller = new ServicePoller(serviceMap);
-
-    fetchExternalServices(vertx, config, serviceMap);
-
-    Router router = Router.router(vertx);
-    router.route().handler(BodyHandler.create());
-
-    generateExternalServicesRoutes(router, serviceMap);*/
-
     Router router = Router.router(vertx);
 
     WebClient webclient = WebClient.create(vertx);
-
-    //setServicePollerEndpoints(router, servicesService);
 
     initRouter(router, config, servicesService, webclient);
 
     vertx.setPeriodic(Constants.SERVICE_POLLER_INTERVAL, id -> {
       initRouter(router, config, servicesService, webclient);
-      /*serviceMap = new ServiceMap();
-      servicePoller = new ServicePoller(serviceMap);
-      router.clear();
-      router.route().handler(BodyHandler.create());
-      setServicePollerEndpoints(router, servicesService);
-      fetchExternalServices(vertx, config, serviceMap)
-        .onSuccess(result -> {
-          generateExternalServicesRoutes(router, serviceMap);
-          servicePoller.pollServicesTask(webclient).onSuccess(results -> {
-            polledServices = results;
-          });
-        })
-          .onFailure(error -> {
-            logger.info("Error fetching external services.\nError message: " + error);
-          });*/
     });
 
     vertx.createHttpServer()
@@ -159,5 +139,17 @@ public class ServiceVerticle extends AbstractVerticle {
     router.post(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::createService);
     router.put(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::updateService);
     router.delete(Constants.SERVICE_POLLER_ENDPOINT).handler(servicesService::deleteService);
+    router.errorHandler(500, routingContext -> {
+      if(routingContext.failure() instanceof ServiceAlreadyExistsException){
+        JsonObject serviceAlreadyExistsError = new JsonObject()
+          .put("timestamp", System.nanoTime())
+          .put("error", routingContext.failure().getMessage());
+        routingContext.response()
+          .setStatusCode(400)
+          .end(serviceAlreadyExistsError.encodePrettily());
+      } else {
+        routingContext.response().setStatusCode(400).end(new JsonObject().put("error", "An unknown error ocurred").encodePrettily());
+      }
+    });
   }
 }
