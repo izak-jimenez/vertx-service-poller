@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { apiBaseUri, apiPort, localApiPort, endpoints } from '../config'
+import { apiBaseUri, apiPort, localApiPort } from '../config'
 
 export const externalServicesHttpClient = axios.create({baseURL: `${apiBaseUri}:${apiPort}`})
 

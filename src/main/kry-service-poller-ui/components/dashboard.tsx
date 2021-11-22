@@ -42,7 +42,6 @@ const Dashboard = () => {
 
   const fetchPolledServices = async () => {
     const polledServices = await getPolledServices()
-    console.log('POLLED SERVICES: ', polledServices?.data)
     const polledServicesList: IService[] = polledServices?.data
     if (polledServicesList.length === 0) {
       setNoRegisteredServices(true)
@@ -84,7 +83,7 @@ const Dashboard = () => {
       status: serviceStatus.ok
     }
     const updatedServiceResponse = await updateService(updatedService)
-    console.log('UPDATED SERVICE ID: ', updatedServiceResponse?.data)
+    console.log('UPDATED SERVICE ID: ', updatedServiceResponse)
     await fetchPolledServices()
   }
 

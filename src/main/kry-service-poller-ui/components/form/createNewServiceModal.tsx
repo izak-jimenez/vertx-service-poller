@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react'
 import { useForm } from 'react-hook-form'
 import { Divider } from '..'
+import { regex } from '../../config'
 import { ICreateNewServiceModal } from '../../types'
 
 const CreateNewServiceModal = ({
@@ -52,6 +53,15 @@ const CreateNewServiceModal = ({
                   minLength: {
                     value: 4,
                     message: 'Service name minimum length should be 4'
+                  },
+                  maxLength: {
+                    value: 24,
+                    message: 'Service name maximum length should be 24'
+                  },
+                  pattern: {
+                    value: new RegExp(regex.serviceNameRegex),
+                    message:
+                      'The service name can only contain letters and spaces'
                   }
                 })}
               />
@@ -70,6 +80,15 @@ const CreateNewServiceModal = ({
                   minLength: {
                     value: 4,
                     message: 'Service URL minimum length should be 4'
+                  },
+                  maxLength: {
+                    value: 24,
+                    message: 'Service URL maximum length should be 24'
+                  },
+                  pattern: {
+                    value: new RegExp(regex.endpointNameRegex),
+                    message:
+                      'Must be an endpoint using the following format: "/my-endpoint" | "/endpoint"'
                   }
                 })}
               />

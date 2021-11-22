@@ -23,6 +23,7 @@ import {
 import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { Divider } from '..'
+import { regex } from '../../config'
 import { deleteService } from '../../services/kry-service-poller-service'
 import { IUpdateServiceModal } from '../../types'
 
@@ -59,6 +60,7 @@ const UpdateServiceModal = ({
   const handleConfirmDeleteService = async () => {
     const deletedService = await deleteService(service?.uuid ?? '')
     await updateServicesHandler()
+    reset()
     close()
     onClose()
   }
@@ -83,6 +85,15 @@ const UpdateServiceModal = ({
                     minLength: {
                       value: 4,
                       message: 'Service name minimum length should be 4'
+                    },
+                    maxLength: {
+                      value: 24,
+                      message: 'Service name maximum length should be 24'
+                    },
+                    pattern: {
+                      value: new RegExp(regex.serviceNameRegex),
+                      message:
+                        'The service name can only contain letters and spaces'
                     }
                   })}
                 />
@@ -102,6 +113,15 @@ const UpdateServiceModal = ({
                     minLength: {
                       value: 4,
                       message: 'Service URL minimum length should be 4'
+                    },
+                    maxLength: {
+                      value: 24,
+                      message: 'Service URL maximum length should be 24'
+                    },
+                    pattern: {
+                      value: new RegExp(regex.endpointNameRegex),
+                      message:
+                        'Must be an endpoint using the following format: "/my-endpoint" | "/endpoint"'
                     }
                   })}
                 />
@@ -142,7 +162,7 @@ const UpdateServiceModal = ({
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure? You can't undo this action afterwards.
+              Are you sure? You can&rsquo;t undo this action afterwards.
             </AlertDialogBody>
 
             <AlertDialogFooter>

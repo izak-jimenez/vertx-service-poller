@@ -18,8 +18,8 @@ export const addService = async (service: IService) => {
   try {
     const response = await servicesHttpClient.post(endpoints.createServiceEndpoint, service)
     if (response.status === 200) {
-      const createdService: number = response.data
-      return response
+      const createdService = response.data
+      return createdService
     }
   } catch(error){
     console.log('An unexpected error ocurred: ', error)
@@ -31,7 +31,7 @@ export const updateService = async (service: IService) => {
     const response = await servicesHttpClient.put(endpoints.updateServiceEndpoint, service)
     if (response.status === 200) {
       const updatedService: string = response.data
-      return response
+      return updatedService
     }
   } catch(error){
     console.log('An unexpected error ocurred: ', error)
@@ -43,7 +43,7 @@ export const deleteService = async (serviceUuid: string) => {
     const response = await servicesHttpClient.delete(`${endpoints.deleteServiceEndpoint}?uuid=${serviceUuid}`)
     if (response.status === 200) {
       const deletedService: string = response.data
-      return response
+      return deletedService
     }
   } catch(error){
     console.log('An unexpected error ocurred: ', error)
