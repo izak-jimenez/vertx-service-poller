@@ -7,4 +7,9 @@ export const serviceStatus = {
   fail: 'FAIL'
 }
 
-export const servicesRefreshRate = 5000
+export const servicesRefreshRate = 1000
+
+export const regex = {
+  serviceNameRegex: '^[a-zA-Z0-9]',
+  endpointNameRegex: '^\/[a-zA-Z]{4,16}((-?[a-zA-Z]{4,16})?)*$'
+}
