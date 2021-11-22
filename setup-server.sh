@@ -8,4 +8,4 @@ echo "Building Vert.x REST API"
 ./gradlew clean build
 
 echo "Installing dependencies..."
-java -jar java -jar build/libs/service-poller-1.0.0-SNAPSHOT-fat.jar run com.kry.codetest.service_poller.ServiceVerticle
+java -jar build/libs/service-poller-1.0.0-SNAPSHOT-fat.jar run com.kry.codetest.service_poller.ServiceVerticle
