@@ -15,48 +15,27 @@
 - openjdk 11+
 - Node v.15
 - npm v.7.3.0
+- yarn 
 
-## Build Vert.x REST API
+## Build and Run Vert.x REST API
 
-In order to build the Vert.x project, you can use the Gradle Wrapper to excute all the necessary commands.
-
-Run the following command inside the root of the project to generate the .jar file with all the bundled libraries and dependencies for the Java Spring Boot application:
-
-```sh
-./gradlew clean build
-```
-
-A ```build``` directory will be generated in the project root directory.
-
-## Run
-
-To run the Vert.x application you just need to run the following command:
+In order to build and run the Vert.x project (REST API), while in the root directory, run the following command:
 
 ```sh
-./gradlew run
+sh setup-server.sh
 ```
 
-Automatically, the application should start running in the configured port (http://localhost:8080)
+Automatically, the backend service should start running in the configured port (http://localhost:8080)
 
-## Build Frontnd Client (Next.js/React)
+## Build and Run Frontend Client (Next.js/React)
 
-In order to build the frontend client, you can use the following command:
+In order to build and run the frontend client, while in the root directory, execute the following command:
 
 ```sh
-.yarn build
+sh setup-client.sh
 ```
 
-A ```build``` directory will be generated in the Next.js project root directory (../src/main/kry-service-poller-ui)
-
-## Run
-
-To run the Next.js application frontend, you just need to run the following command:
-
-```sh
-yarn start
-```
-
-Automatically, the application should start running in the configured port (http://localhost:3000)
+Automatically, the backend service should start running in the configured port (http://localhost:3000)
 
 ## Test
 
