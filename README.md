@@ -35,7 +35,7 @@ In order to build and run the frontend client, while in the root directory, exec
 sh setup-client.sh
 ```
 
-Automatically, the forntend client service should start running in the configured port (http://localhost:3000). All you need to do is navigate to this address on your browser.
+Automatically, the frontend client service should start running in the configured port (http://localhost:3000). All you need to do is navigate to this address on your browser.
 
 ## Test
 
