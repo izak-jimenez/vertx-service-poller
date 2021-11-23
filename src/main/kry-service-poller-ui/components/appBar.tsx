@@ -1,5 +1,6 @@
 import { Box, Center, Stack, Button } from '@chakra-ui/react'
 import { useDisclosure } from '@chakra-ui/hooks'
+import { useSnackbar } from 'notistack'
 import { addService } from '../services/kry-service-poller-service'
 import { CreateNewServiceModal } from './form'
 import { IService } from '../types'
@@ -7,6 +8,7 @@ import { serviceStatus } from '../config'
 
 const AppBar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
   const createNewServiceHandler = async (
     serviceName: string,
     serviceUrl: string
@@ -17,7 +19,9 @@ const AppBar = () => {
       status: serviceStatus.ok
     }
     const createdService = await addService(newService)
-    console.log('CREATED SERVICE ID: ', createdService?.data)
+    if (createdService) {
+      enqueueSnackbar('Service created successfully!', { variant: 'success' })
+    }
   }
 
   return (

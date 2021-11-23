@@ -49,10 +49,10 @@ public class ServiceVerticle extends AbstractVerticle {
     logger.info("MONGO URI: " + mongodbUri);
     logger.info("MONGO DB: " + mongoDbDatabase);
 
-    config.put("mongo_uri", mongodbUri);
-    config.put("mongo_db", mongoDbDatabase);
-    /*config.put("mongo_uri", "mongodb+srv://kry:JBE7E3hBtgkRrSoL@kry-cluster.ovhky.mongodb.net/krydb?retryWrites=true&w=majority");
-    config.put("mongo_db", "krydb");*/
+    /*config.put("mongo_uri", mongodbUri);
+    config.put("mongo_db", mongoDbDatabase);*/
+    config.put("mongo_uri", "mongodb+srv://kry:JBE7E3hBtgkRrSoL@kry-cluster.ovhky.mongodb.net/krydb?retryWrites=true&w=majority");
+    config.put("mongo_db", "krydb");
 
     JsonObject mongoConfig = new JsonObject()
       .put("connection_string", config.getString("mongo_uri"))
@@ -145,7 +145,7 @@ public class ServiceVerticle extends AbstractVerticle {
           .put("timestamp", System.nanoTime())
           .put("error", routingContext.failure().getMessage());
         routingContext.response()
-          .setStatusCode(400)
+          .setStatusCode(409)
           .end(serviceAlreadyExistsError.encodePrettily());
       } else {
         routingContext.response().setStatusCode(400).end(new JsonObject().put("error", "An unknown error ocurred").encodePrettily());

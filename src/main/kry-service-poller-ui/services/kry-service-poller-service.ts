@@ -21,8 +21,8 @@ export const addService = async (service: IService) => {
       const createdService = response.data
       return createdService
     }
-  } catch(error){
-    console.log('An unexpected error ocurred: ', error)
+  } catch(error: any){
+    console.log('An unexpected error ocurred: ', error.status)
   }
 }
 

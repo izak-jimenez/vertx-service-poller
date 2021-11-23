@@ -39,18 +39,25 @@ public class ServicesService {
       .put("name", routingContext.getBodyAsJson().getValue("name"));
     servicesRepository.getMongoClient().find(Constants.SERVICE_DOCUMENT, query, result -> {
       if (result.succeeded()) {
-        throw new ServiceAlreadyExistsException(routingContext.getBodyAsJson().getValue("name").toString());
+        logger.info("RESULT: " + result.result());
+        if(result.result().size() == 0) {
+          servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, servicePayload, createServiceResult -> {
+            if (!createServiceResult.succeeded()) {
+              logger.info("ERROR WHILE REGISTERING SERVICE: " + createServiceResult.cause().getMessage());
+            }
+            routingContext.response()
+              .setStatusCode(200)
+              .end(createServiceResult.result());
+            promise.complete();
+          });
+        } else {
+          routingContext.response()
+            .setStatusCode(409)
+            .end(new JsonObject().put("error", "The service already exists").encodePrettily());
+          promise.complete();
+        }
       } else {
         result.cause().printStackTrace();
-        servicesRepository.getMongoClient().save(Constants.SERVICE_DOCUMENT, servicePayload, createServiceResult -> {
-          if (!createServiceResult.succeeded()) {
-            logger.info("ERROR WHILE REGISTERING SERVICE: " + createServiceResult.cause().getMessage());
-          }
-          routingContext.response()
-            .setStatusCode(200)
-            .end(createServiceResult.result());
-          promise.complete();
-        });
       }
     });
 

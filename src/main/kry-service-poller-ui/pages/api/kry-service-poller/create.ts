@@ -5,16 +5,28 @@ import { endpoints } from '../../../config'
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'POST') {
     try {
-      const createdService = await externalServicesHttpClient.post(endpoints.servicePollerEndpoint, req.body)
-      console.log(createdService.data)
+      const createdService = await externalServicesHttpClient.post(
+        endpoints.servicePollerEndpoint,
+        req.body
+      )
       res.status(200)
       res.json(createdService.data)
       return
-    } catch (error) {
-      console.log('ERROR OCURRED WHILE CREATING SERVICE: ', error)
-      res.status(500)
-      res.json({ error: 'The following error while creating the service', errorMsg: error })
-      return
+    } catch (error: any) {
+      if (error.status === 409) {
+        res.status(409)
+        res.json({
+          error: 'The service already exists'
+        })
+        return
+      } else {
+        res.status(500)
+        res.json({
+          error: 'The following error ocurred while creating the service',
+          errorMsg: error
+        })
+        return
+      }
     }
   }
   res.status(404)

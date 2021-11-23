@@ -11,7 +11,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       res.json(updatedService.data)
       return
     } catch (error) {
-      console.log('ERROR OCURRED WHILE UPDATING SERVICE: ', error)
       res.status(500)
       res.json({ error: 'The following error while updating the service', errorMsg: error })
       return

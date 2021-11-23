@@ -20,6 +20,7 @@ import {
   AlertDialogBody,
   AlertDialogFooter
 } from '@chakra-ui/react'
+import { useSnackbar } from 'notistack'
 import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { Divider } from '..'
@@ -40,6 +41,7 @@ const UpdateServiceModal = ({
     reset,
     formState: { errors, isSubmitting }
   } = useForm()
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
@@ -60,6 +62,7 @@ const UpdateServiceModal = ({
   const handleConfirmDeleteService = async () => {
     const deletedService = await deleteService(service?.uuid ?? '')
     await updateServicesHandler()
+    enqueueSnackbar('Service deleted successfully!', { variant: 'success' })
     reset()
     close()
     onClose()

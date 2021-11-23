@@ -10,6 +10,7 @@ import { Spinner } from '@chakra-ui/spinner'
 import { useDisclosure } from '@chakra-ui/hooks'
 import { useState } from 'react'
 import { useQuery, QueryClient, QueryClientProvider } from 'react-query'
+import { useSnackbar } from 'notistack'
 import { Divider, ServiceCard, AppBar } from '.'
 import { servicesRefreshRate, serviceStatus } from '../config'
 import {
@@ -39,6 +40,7 @@ const Dashboard = () => {
   )
   const [noRegisteredServices, setNoRegisteredServices] =
     useState<Boolean>(false)
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
   const fetchPolledServices = async () => {
     const polledServices = await getPolledServices()
@@ -66,7 +68,6 @@ const Dashboard = () => {
   )
 
   const handleServiceClick = (service: IService) => {
-    console.log('SELECTED SERVICE: ', service)
     onOpen()
     setSelectedService(service)
   }
@@ -83,7 +84,9 @@ const Dashboard = () => {
       status: serviceStatus.ok
     }
     const updatedServiceResponse = await updateService(updatedService)
-    console.log('UPDATED SERVICE ID: ', updatedServiceResponse)
+    if (updatedServiceResponse) {
+      enqueueSnackbar('Service updated successfully', { variant: 'success' })
+    }
     await fetchPolledServices()
   }
 
