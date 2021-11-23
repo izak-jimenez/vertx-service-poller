@@ -7,8 +7,6 @@ import com.kry.codetest.service_poller.model.ServiceMap;
 import com.kry.codetest.service_poller.repository.ServicesRepository;
 import com.kry.codetest.service_poller.service.ServicesService;
 import com.kry.codetest.service_poller.util.ServicePoller;
-import io.vertx.config.ConfigRetriever;
-import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -38,21 +36,13 @@ public class ServiceVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) {
-    /*ConfigStoreOptions jsonConfigStore = new ConfigStoreOptions()
-      .setType("file")
-      .setOptional(true)
-      .setConfig(new JsonObject().put("path", "config/config.json"));
-    ConfigRetriever retriever = ConfigRetriever.create(vertx);*/
-
     JsonObject config = Vertx.currentContext().config();
 
     logger.info("MONGO URI: " + mongodbUri);
     logger.info("MONGO DB: " + mongoDbDatabase);
 
-    /*config.put("mongo_uri", mongodbUri);
-    config.put("mongo_db", mongoDbDatabase);*/
-    config.put("mongo_uri", "mongodb+srv://kry:JBE7E3hBtgkRrSoL@kry-cluster.ovhky.mongodb.net/krydb?retryWrites=true&w=majority");
-    config.put("mongo_db", "krydb");
+    config.put("mongo_uri", mongodbUri);
+    config.put("mongo_db", mongoDbDatabase);
 
     JsonObject mongoConfig = new JsonObject()
       .put("connection_string", config.getString("mongo_uri"))
